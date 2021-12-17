@@ -21,4 +21,8 @@ public class SearchJustNumberController {
         return Map.of("prime-number", nearestNumber, "requested-x", number);
     }
 
+    @ExceptionHandler({IllegalArgumentException.class})
+    public Map<String, String> exceptionHandler(Exception e) {
+        return Map.of("exception", e.getMessage());
+    }
 }

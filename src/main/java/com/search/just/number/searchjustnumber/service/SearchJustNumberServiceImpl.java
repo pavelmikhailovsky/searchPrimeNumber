@@ -8,10 +8,36 @@ import java.util.List;
 
 @Service
 public class SearchJustNumberServiceImpl implements SearchJustNumberService {
+
+    private final CachePrimeNumberService cachePrimeNumberService;
+
+    public SearchJustNumberServiceImpl(CachePrimeNumberService cachePrimeNumberService) {
+        this.cachePrimeNumberService = cachePrimeNumberService;
+    }
+
     @Override
     public int returnedNumberClosestLeft(int number) {
-        List<Integer> primeNumber = eratosthenesSieve(number);
-        return primeNumber.get(primeNumber.size() - 1);
+        if (number <= 2) {
+            throw new IllegalArgumentException("число должно быть больше 2");
+        }
+        int maxPrimeNumberCache = cachePrimeNumberService.getMaxPrimeNumber();
+        return primeNumberClosestLeft(number, maxPrimeNumberCache);
+    }
+
+    private int primeNumberClosestLeft(int number, int maxPrimeNumberCache) {
+        int primeNumberClosestLeft;
+
+        if (number <= maxPrimeNumberCache) {
+            primeNumberClosestLeft = cachePrimeNumberService.getPrimeNumber(number);
+        } else {
+            List<Integer> primeNumber = eratosthenesSieve(number);
+            primeNumberClosestLeft = primeNumber.isEmpty() ? maxPrimeNumberCache : primeNumber.get(primeNumber.size() - 1);
+            if (primeNumberClosestLeft != maxPrimeNumberCache) {
+                cachePrimeNumberService.addPrimeNumber(primeNumber, maxPrimeNumberCache);
+            }
+        }
+
+        return primeNumberClosestLeft;
     }
 
     private List<Integer> eratosthenesSieve(int number) {
